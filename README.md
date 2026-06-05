@@ -1,0 +1,122 @@
+# Second Brain MVP
+
+Voice-first Web-App für ein persönliches KI-Gedächtnis.
+
+Kernversprechen: Sprich einfach los. Deine KI ordnet alles für dich.
+
+## Technische Planung
+
+Der aktuelle Stand umfasst das tragfähige Frontend-Grundgerüst und Supabase Auth:
+
+- Next.js mit App Router, TypeScript und Tailwind CSS
+- mobile-first Layout mit zentraler App-Shell
+- Bottom Navigation für die fünf Hauptbereiche
+- leere Platzhalterseiten für den späteren Produktfluss
+- Supabase Auth per Magic Link / Email OTP
+- geschützte Hauptseiten über Middleware
+- noch keine OpenAI-Integration
+- noch keine Aufnahmefunktion
+
+Die Architektur bleibt bewusst klein, damit Recording, Transkription und Speicherung später sauber ergänzt werden können.
+
+## Ordnerstruktur
+
+```txt
+app/
+  auth/
+    confirm/
+  capture/
+  today/
+  memory/
+  loops/
+  chat/
+  login/
+components/
+  AppShell.tsx
+  BottomNav.tsx
+  CaptureButton.tsx
+  LoginForm.tsx
+  LogoutButton.tsx
+  PlaceholderCard.tsx
+lib/
+  supabase/
+    client.ts
+    server.ts
+  types.ts
+middleware.ts
+```
+
+## Environment Variables
+
+Lege lokal eine `.env.local` an. Für Auth werden nur die beiden öffentlichen Supabase-Variablen verwendet. `SUPABASE_SERVICE_ROLE_KEY` und `OPENAI_API_KEY` sind Platzhalter für spätere Schritte und werden aktuell nicht im Browser genutzt.
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENAI_API_KEY=
+```
+
+## Supabase Auth einrichten
+
+1. Erstelle ein Supabase-Projekt.
+2. Kopiere aus `Project Settings > API` die `Project URL` nach `NEXT_PUBLIC_SUPABASE_URL`.
+3. Kopiere den `anon public` Key nach `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4. Aktiviere unter `Authentication > Providers` den Email-Provider.
+5. Setze unter `Authentication > URL Configuration` die lokale Site URL:
+
+```txt
+http://localhost:3000
+```
+
+6. Erlaube als Redirect URL:
+
+```txt
+http://localhost:3000/auth/confirm
+```
+
+Für Deployments muss zusätzlich die Vercel-Domain als Site URL bzw. Redirect URL eingetragen werden.
+
+## Lokales Setup
+
+```bash
+npm install
+npm run dev
+```
+
+Die App läuft danach standardmäßig unter:
+
+```txt
+http://localhost:3000
+```
+
+## Nützliche Checks
+
+```bash
+npm run typecheck
+npm run build
+```
+
+## Aktuelle Seiten
+
+- `/capture` - Startflow mit großem "Sprich los"-Button
+- `/today` - Platzhalter für Tagesübersicht
+- `/memory` - Platzhalter für gespeicherte Gedanken
+- `/loops` - Platzhalter für offene Aufgaben, Entscheidungen, Fragen und Ideen
+- `/chat` - Platzhalter für Chat über das Gedächtnis
+- `/login` - Magic-Link-Login per Supabase Auth
+
+## Auth lokal testen
+
+1. `.env.local` mit den Supabase-Werten anlegen.
+2. `npm run dev` starten.
+3. `http://localhost:3000/capture` öffnen.
+4. Ohne Session solltest du nach `/login` weitergeleitet werden.
+5. E-Mail eingeben und Magic Link senden.
+6. Link aus der E-Mail öffnen.
+7. Nach erfolgreichem Login solltest du auf `/capture` landen.
+8. Mit `Abmelden` wird die Session beendet und du landest auf `/login`.
+
+## Nächster sinnvoller Schritt
+
+Als nächstes sollten Datenbanktabellen und Row Level Security für Gedanken, Transkripte und spätere Loops vorbereitet werden.
