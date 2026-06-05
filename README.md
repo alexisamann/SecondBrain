@@ -107,6 +107,33 @@ weekly_reviews
 
 RLS wird in der Migration für alle Tabellen aktiviert. Die Policies erlauben angemeldeten Nutzern nur Zugriff auf eigene Datensätze.
 
+## Supabase Smoke Test
+
+Nach Auth-Setup und ausgeführter Datenbankmigration zeigt `/today` einen kleinen Bereich `Systemstatus`.
+
+Erwartete Werte bei einem frisch eingeloggten Nutzer:
+
+```txt
+Angemeldet als: deine-email@example.com
+Profil gefunden: Ja
+Gespeicherte Gedanken: 0
+Offene Loops: 0
+```
+
+So testest du lokal:
+
+1. `.env.local` mit `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` setzen.
+2. Supabase-Migration aus `db/migrations/001_initial_schema.sql` ausführen.
+3. `npm run dev` starten.
+4. Per Magic Link einloggen.
+5. `/today` öffnen und den Bereich `Systemstatus` prüfen.
+
+Typische Fehler:
+
+- `Profil gefunden: Nein`: Trigger `on_auth_user_created` fehlt, Migration wurde vor dem Login nicht ausgeführt oder das Profil wurde manuell gelöscht.
+- Fehler beim Zählen: Tabellen fehlen, RLS-Policies fehlen oder die Migration wurde nicht vollständig ausgeführt.
+- Weiterleitung zu `/login`: Session fehlt oder Supabase Auth-Redirect ist falsch konfiguriert.
+
 ## Lokales Setup
 
 ```bash
