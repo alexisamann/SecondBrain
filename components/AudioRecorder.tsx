@@ -28,6 +28,28 @@ function getSupportedMimeType() {
   return supportedMimeTypes.find((mimeType) => MediaRecorder.isTypeSupported(mimeType));
 }
 
+function getAudioFileExtension(mimeType: string) {
+  const normalizedMimeType = mimeType.toLowerCase().split(";")[0]?.trim();
+
+  if (normalizedMimeType === "audio/mp4") {
+    return "mp4";
+  }
+
+  if (normalizedMimeType === "audio/x-m4a" || normalizedMimeType === "audio/m4a") {
+    return "m4a";
+  }
+
+  if (normalizedMimeType === "audio/mpeg" || normalizedMimeType === "audio/mp3") {
+    return "mp3";
+  }
+
+  if (normalizedMimeType === "audio/wav") {
+    return "wav";
+  }
+
+  return "webm";
+}
+
 export function AudioRecorder() {
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -149,12 +171,18 @@ export function AudioRecorder() {
       return;
     }
 
+    if (audioBlob.size === 0) {
+      setTranscriptionState("error");
+      setErrorMessage("Die Aufnahme ist leer. Bitte nimm erneut auf.");
+      return;
+    }
+
     setTranscriptionState("processing");
 
     try {
       const formData = new FormData();
-      const extension = audioBlob.type.includes("mp4") ? "mp4" : "webm";
-      const audioFile = new File([audioBlob], `capture.${extension}`, {
+      const extension = getAudioFileExtension(audioBlob.type);
+      const audioFile = new File([audioBlob], `recording.${extension}`, {
         type: audioBlob.type || "audio/webm"
       });
 

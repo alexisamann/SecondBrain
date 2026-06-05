@@ -175,6 +175,22 @@ So testest du:
 
 In diesem Schritt wird Audio nicht gespeichert. Das Transkript wird nur angezeigt und noch nicht in Supabase gespeichert.
 
+Unterstützte Audioformate für den Upload:
+
+```txt
+webm
+mp4
+m4a
+mp3
+mpeg
+mpga
+wav
+aac
+ogg
+```
+
+Browser erzeugen je nach Plattform unterschiedliche MIME-Types, zum Beispiel `audio/webm;codecs=opus` oder `audio/mp4`. Für die Transkription sind Dateiname, Dateiendung und MIME-Type relevant; der Upload normalisiert diese Werte pragmatisch.
+
 ## Lokales Setup
 
 ```bash
