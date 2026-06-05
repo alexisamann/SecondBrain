@@ -8,6 +8,13 @@ export type NavItem = {
 
 export type PlaceholderTone = "neutral" | "warm" | "sage";
 
+export type RecordingState =
+  | "idle"
+  | "requesting_permission"
+  | "recording"
+  | "stopped"
+  | "error";
+
 export type ThoughtType =
   | "thought"
   | "task"

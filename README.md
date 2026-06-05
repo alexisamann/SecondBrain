@@ -134,6 +134,23 @@ Typische Fehler:
 - Fehler beim Zählen: Tabellen fehlen, RLS-Policies fehlen oder die Migration wurde nicht vollständig ausgeführt.
 - Weiterleitung zu `/login`: Session fehlt oder Supabase Auth-Redirect ist falsch konfiguriert.
 
+## Audio Recording lokal testen
+
+Der Capture Flow unter `/capture` nutzt die Browser-APIs für Mikrofonaufnahme. Der Browser fragt beim Start der Aufnahme nach Mikrofonberechtigung.
+
+Aktueller Stand:
+
+- Aufnahme startet und stoppt lokal im Browser.
+- Nach dem Stoppen wird eine lokale Audiodatei als Object URL erzeugt.
+- Die Aufnahme kann angehört oder verworfen werden.
+- Verarbeitung, Upload, Transkription und Speicherung kommen in späteren Schritten.
+
+Hinweise:
+
+- `navigator.mediaDevices.getUserMedia` und `MediaRecorder` müssen verfügbar sein.
+- Auf iOS/Safari kann es Browser-spezifische Unterschiede bei unterstützten Audioformaten geben.
+- Im MVP bleibt die Aufnahme lokal im Browser, bis ein späterer Verarbeitungsschritt ergänzt wird.
+
 ## Lokales Setup
 
 ```bash
