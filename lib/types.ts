@@ -15,6 +15,8 @@ export type RecordingState =
   | "stopped"
   | "error";
 
+export type TranscriptionState = "idle" | "processing" | "success" | "error";
+
 export type ThoughtType =
   | "thought"
   | "task"

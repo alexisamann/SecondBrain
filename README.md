@@ -52,7 +52,7 @@ db/
 
 ## Environment Variables
 
-Lege lokal eine `.env.local` an. Für Auth werden nur die beiden öffentlichen Supabase-Variablen verwendet. `SUPABASE_SERVICE_ROLE_KEY` und `OPENAI_API_KEY` sind Platzhalter für spätere Schritte und werden aktuell nicht im Browser genutzt.
+Lege lokal eine `.env.local` an. Für Auth werden die beiden öffentlichen Supabase-Variablen verwendet. Für serverseitige Transkription wird `OPENAI_API_KEY` benötigt. `SUPABASE_SERVICE_ROLE_KEY` bleibt ein Platzhalter für spätere Schritte und wird aktuell nicht im Browser genutzt.
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
@@ -150,6 +150,30 @@ Hinweise:
 - `navigator.mediaDevices.getUserMedia` und `MediaRecorder` müssen verfügbar sein.
 - Auf iOS/Safari kann es Browser-spezifische Unterschiede bei unterstützten Audioformaten geben.
 - Im MVP bleibt die Aufnahme lokal im Browser, bis ein späterer Verarbeitungsschritt ergänzt wird.
+
+## Transkription lokal testen
+
+Die Transkription läuft über die serverseitige API Route:
+
+```txt
+POST /api/transcribe
+```
+
+Voraussetzung in `.env.local`:
+
+```env
+OPENAI_API_KEY=
+```
+
+So testest du:
+
+1. `OPENAI_API_KEY` setzen.
+2. Dev-Server neu starten.
+3. Auf `/capture` eine Aufnahme erstellen.
+4. `Verarbeiten` klicken.
+5. Nach erfolgreicher Antwort erscheint das `Transkript` direkt auf der Seite.
+
+In diesem Schritt wird Audio nicht gespeichert. Das Transkript wird nur angezeigt und noch nicht in Supabase gespeichert.
 
 ## Lokales Setup
 

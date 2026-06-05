@@ -2,7 +2,7 @@
 
 import { Mic, Play, RotateCcw, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { RecordingState } from "@/lib/types";
+import type { RecordingState, TranscriptionState } from "@/lib/types";
 
 const supportedMimeTypes = [
   "audio/webm;codecs=opus",
@@ -31,8 +31,12 @@ function getSupportedMimeType() {
 export function AudioRecorder() {
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [transcriptionState, setTranscriptionState] =
+    useState<TranscriptionState>("idle");
+  const [transcript, setTranscript] = useState("");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -69,6 +73,9 @@ export function AudioRecorder() {
 
     setRecordingState("requesting_permission");
     revokeAudioUrl();
+    setAudioBlob(null);
+    setTranscript("");
+    setTranscriptionState("idle");
     chunksRef.current = [];
 
     try {
@@ -92,6 +99,7 @@ export function AudioRecorder() {
         const blob = new Blob(chunksRef.current, {
           type: mediaRecorder.mimeType || "audio/webm"
         });
+        setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
         setRecordingState("stopped");
         clearTimer();
@@ -131,14 +139,62 @@ export function AudioRecorder() {
     }
   }
 
+  async function transcribeRecording() {
+    setErrorMessage("");
+    setTranscript("");
+
+    if (!audioBlob) {
+      setTranscriptionState("error");
+      setErrorMessage("Keine Aufnahme vorhanden.");
+      return;
+    }
+
+    setTranscriptionState("processing");
+
+    try {
+      const formData = new FormData();
+      const extension = audioBlob.type.includes("mp4") ? "mp4" : "webm";
+      const audioFile = new File([audioBlob], `capture.${extension}`, {
+        type: audioBlob.type || "audio/webm"
+      });
+
+      formData.append("audio", audioFile);
+
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = (await response.json()) as {
+        transcript?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !result.transcript) {
+        throw new Error(result.error || "Transkription fehlgeschlagen.");
+      }
+
+      setTranscript(result.transcript);
+      setTranscriptionState("success");
+    } catch (error) {
+      setTranscriptionState("error");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Transkription fehlgeschlagen."
+      );
+    }
+  }
+
   function discardRecording() {
     clearTimer();
     stopStream();
     revokeAudioUrl();
+    setAudioBlob(null);
     chunksRef.current = [];
     mediaRecorderRef.current = null;
     setElapsedSeconds(0);
     setErrorMessage("");
+    setTranscript("");
+    setTranscriptionState("idle");
     setRecordingState("idle");
   }
 
@@ -155,6 +211,7 @@ export function AudioRecorder() {
   const isRequestingPermission = recordingState === "requesting_permission";
   const isRecording = recordingState === "recording";
   const isStopped = recordingState === "stopped";
+  const isTranscribing = transcriptionState === "processing";
 
   return (
     <div className="flex w-full flex-col items-center text-center">
@@ -221,16 +278,31 @@ export function AudioRecorder() {
             </button>
             <button
               type="button"
-              disabled
-              className="h-11 rounded-md bg-ink px-3 text-sm font-semibold text-paper opacity-45"
+              disabled={isTranscribing}
+              onClick={transcribeRecording}
+              className="h-11 rounded-md bg-ink px-3 text-sm font-semibold text-paper transition disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Verarbeiten bald verfügbar
+              {isTranscribing ? "Transkription läuft ..." : "Verarbeiten"}
             </button>
           </div>
+          {isTranscribing && (
+            <p className="mt-3 text-sm leading-6 text-neutral-600">
+              Transkription läuft ...
+            </p>
+          )}
+          {transcript && (
+            <div className="mt-4 rounded-md bg-white p-3">
+              <h3 className="text-sm font-semibold text-ink">Transkript</h3>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-neutral-700">
+                {transcript}
+              </p>
+            </div>
+          )}
         </section>
       )}
 
-      {recordingState === "error" && errorMessage && (
+      {(recordingState === "error" || transcriptionState === "error") &&
+        errorMessage && (
         <p className="mt-5 max-w-xs text-sm leading-6 text-red-700">{errorMessage}</p>
       )}
 
