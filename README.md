@@ -13,7 +13,8 @@ Der aktuelle Stand umfasst das tragfähige Frontend-Grundgerüst und Supabase Au
 - Bottom Navigation für die fünf Hauptbereiche
 - leere Platzhalterseiten für den späteren Produktfluss
 - Supabase Auth per Magic Link / Email OTP
-- geschützte Hauptseiten über Middleware
+- geschützte Hauptseiten über serverseitiges Protected Layout
+- Supabase-Datenbankfundament mit RLS-Migration
 - noch keine OpenAI-Integration
 - noch keine Aufnahmefunktion
 
@@ -25,11 +26,12 @@ Die Architektur bleibt bewusst klein, damit Recording, Transkription und Speiche
 app/
   auth/
     confirm/
-  capture/
-  today/
-  memory/
-  loops/
-  chat/
+  (protected)/
+    capture/
+    today/
+    memory/
+    loops/
+    chat/
   login/
 components/
   AppShell.tsx
@@ -43,7 +45,9 @@ lib/
     client.ts
     server.ts
   types.ts
-middleware.ts
+db/
+  migrations/
+    001_initial_schema.sql
 ```
 
 ## Environment Variables
@@ -76,6 +80,32 @@ http://localhost:3000/auth/confirm
 ```
 
 Für Deployments muss zusätzlich die Vercel-Domain als Site URL bzw. Redirect URL eingetragen werden.
+
+## Supabase Datenbankmigration ausführen
+
+Die initiale Migration liegt unter:
+
+```txt
+db/migrations/001_initial_schema.sql
+```
+
+So führst du sie in Supabase aus:
+
+1. Öffne dein Supabase-Projekt.
+2. Gehe zu `SQL Editor`.
+3. Erstelle eine neue Query.
+4. Kopiere den vollständigen Inhalt aus `db/migrations/001_initial_schema.sql`.
+5. Führe die Query aus.
+6. Prüfe unter `Table Editor`, ob diese Tabellen sichtbar sind:
+
+```txt
+profiles
+thoughts
+extracted_items
+weekly_reviews
+```
+
+RLS wird in der Migration für alle Tabellen aktiviert. Die Policies erlauben angemeldeten Nutzern nur Zugriff auf eigene Datensätze.
 
 ## Lokales Setup
 
@@ -119,4 +149,4 @@ npm run build
 
 ## Nächster sinnvoller Schritt
 
-Als nächstes sollten Datenbanktabellen und Row Level Security für Gedanken, Transkripte und spätere Loops vorbereitet werden.
+Als nächstes sollte Audio Recording im Browser als lokaler UI-Flow ergänzt werden.
